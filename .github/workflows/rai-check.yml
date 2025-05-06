@@ -33,11 +33,12 @@ jobs:
         env:
           INVENTORY_FLOW_URL: ${{ secrets.INVENTORY_FLOW_URL }}
         run: |
-          RESPONSE=$(curl -s -X POST "$INVENTORY_FLOW_URL" \
+          RESPONSE=$(curl -s -X POST "$FLOW_URL" \
             -H "Content-Type: application/json" \
             -d "{\"solutionId\": \"$AGENT_ID\"}")
           echo "Sent payload: {\"solutionId\":\"$AGENT_ID\"}"
           echo "Inventory check response: $RESPONSE"
+          echo "flow URL used: $FLOW_URL"
           EXISTS=$(echo $RESPONSE | jq -r '.exists')
           echo "EXISTS=$EXISTS" >> $GITHUB_ENV
 
