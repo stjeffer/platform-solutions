@@ -1,36 +1,55 @@
-# This is a basic workflow to help you get started with Actions
+name: Validate and Deploy Power Platform Solution
 
-name: CI
-
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches:
+      - main
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
+  validate-inventory:
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
-
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
+      - name: Unzip solution and locate bot.xml
         run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+          unzip -o solutions/*.zip -d extracted/
+          find extracted/ -name "bot.xml" -print
+
+      - name: Extract agent ID (applicationId) from bot.xml
+        id: extract_agent
+        run: |
+          BOT_XML_PATH=$(find extracted/ -name "bot.xml" | head -n 1)
+          echo "Found bot.xml at: $BOT_XML_PATH"
+
+          AGENT_ID=$(grep -oP '"applicationId"\s*:\s*"\K[^"]+' "$BOT_XML_PATH" || echo "NOT_FOUND")
+          echo "Extracted agent ID: $AGENT_ID"
+
+          echo "AGENT_ID=$AGENT_ID" >> $GITHUB_ENV
+
+      - name: Call Inventory Validation Flow
+        id: call_inventory
+        env:
+          FLOW_URL: ${{ secrets.INVENTORY_FLOW_URL }}
+        run: |
+          RESPONSE=$(curl -s -X POST "$FLOW_URL" \
+            -H "Content-Type: application/json" \
+            -d "{\"agentId\": \"$AGENT_ID\", \"token\": \"$AUTH_TOKEN\"}")
+
+          echo "Inventory check response: $RESPONSE"
+          EXISTS=$(echo $RESPONSE | jq -r '.exists')
+          echo "EXISTS=$EXISTS" >> $GITHUB_ENV
+
+      - name: Stop deployment if agent is unregistered
+        if: env.EXISTS == 'false'
+        run: |
+          echo "Agent not found in inventory. Deployment halted until metadata is completed."
+          exit 1
+
+  deploy-solution:
+    needs: validate-inventory
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy (Placeholder)
+        run: echo "Would proceed to deployment step here"
