@@ -33,7 +33,7 @@ jobs:
         env:
           INVENTORY_FLOW_URL: ${{ secrets.INVENTORY_FLOW_URL }}
         run: |
-          RESPONSE=$(curl -s -X POST "$FLOW_URL" \
+          RESPONSE=$(curl -s -X POST "https://prod-16.westus.logic.azure.com:443/workflows/770b8245ddff43f18af55229c075ee0a/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=is62gwJYPw3YVLJ9OyMdO9s3APYdJyZa2EA23_Huyow" \
             -H "Content-Type: application/json" \
             -d "{\"solutionId\": \"$AGENT_ID\"}")
           echo "Sent payload: {\"solutionId\":\"$AGENT_ID\"}"
