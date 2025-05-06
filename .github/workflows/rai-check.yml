@@ -35,7 +35,7 @@ jobs:
         run: |
           RESPONSE=$(curl -s -X POST "$INVENTORY_FLOW_URL" \
             -H "Content-Type: application/json" \
-            -d "{\"agentId\": \"$AGENT_ID\"}")
+            -d "{\"solutionId\": \"$AGENT_ID\"}")
 
           echo "Inventory check response: $RESPONSE"
           EXISTS=$(echo $RESPONSE | jq -r '.exists')
