@@ -31,9 +31,9 @@ jobs:
       - name: Call Inventory Validation Flow
         id: call_inventory
         env:
-          FLOW_URL: ${{ secrets.INVENTORY_FLOW_URL }}
+          INVENTORY_FLOW_URL: ${{ secrets.INVENTORY_FLOW_URL }}
         run: |
-          RESPONSE=$(curl -s -X POST "$FLOW_URL" \
+          RESPONSE=$(curl -s -X POST "$INVENTORY_FLOW_URL" \
             -H "Content-Type: application/json" \
             -d "{\"agentId\": \"$AGENT_ID\"}")
 
