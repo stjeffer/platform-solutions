@@ -36,7 +36,7 @@ jobs:
           RESPONSE=$(curl -s -X POST "$INVENTORY_FLOW_URL" \
             -H "Content-Type: application/json" \
             -d "{\"solutionId\": \"$AGENT_ID\"}")
-
+          echo "Sent payload: {\"solutionId\":\"$AGENT_ID\"}"
           echo "Inventory check response: $RESPONSE"
           EXISTS=$(echo $RESPONSE | jq -r '.exists')
           echo "EXISTS=$EXISTS" >> $GITHUB_ENV
